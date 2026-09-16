@@ -5,16 +5,17 @@ An AI-assisted recruitment intelligence platform that converts resumes into evid
 ## Status
 
 ```text
-Phase 1 — Authentication
+Phase 2A — SaaS foundation (schema)
 ```
 
-Foundation plus Supabase email/password authentication: sign in, a protected `/app` destination, sign out, and password recovery (request email → callback → choose a new password). The backend still exposes only `GET /health`. No recruitment features are implemented yet.
+Foundation, Supabase email/password authentication (sign in, protected `/app`, sign out, password recovery), and the multi-tenant database foundation in `supabase/migrations`: customer organizations with memberships, dynamic organization-defined roles over a system-defined permission catalog (users may hold several roles across several organizations), a separate platform-admin control plane, and per-organization service entitlements. Every table is protected by Row Level Security. Platform and tenant administration screens arrive in the following Phase 2 subphases. The backend still exposes only `GET /health`. No recruitment features are implemented yet.
 
 ## Architecture
 
 ```text
 frontend   Next.js frontend (App Router, TypeScript, Tailwind CSS)
 backend    FastAPI backend
+supabase   Database migrations and local RLS checks
 ```
 
 The two applications are independent and are run separately. They do not communicate yet.
@@ -65,6 +66,10 @@ Backend tests:
 cd backend
 pytest
 ```
+
+## Database
+
+Schema changes live in `supabase/migrations` and are applied to the hosted Supabase project through the dashboard SQL editor or `supabase db push`. `supabase/tests/rls_checks.sql` applies the migration to a throwaway local PostgreSQL and asserts tenant isolation (see its header for the command).
 
 ## Environment variables
 
