@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { getOrganizationContext, getUserContext } from "@/lib/auth/organization-context";
+import { requireOrganizationAccess } from "@/lib/auth/organization-context";
 import { Brand } from "@/components/layout/brand";
 import { SignOutButton } from "@/components/layout/sign-out-button";
 import { StatusDot } from "@/components/ui/status-dot";
@@ -14,13 +13,7 @@ export default async function OrganizationWorkspacePage({
   params: Promise<{ organizationSlug: string }>;
 }) {
   const { organizationSlug } = await params;
-  const user = await getUserContext();
-  if (!user) redirect("/login");
-
-  // Resolved through the user's own active memberships, so an unknown slug and another tenant's
-  // slug are indistinguishable: both are simply not found.
-  const context = await getOrganizationContext(user, organizationSlug);
-  if (!context) notFound();
+  const { user, context } = await requireOrganizationAccess(organizationSlug);
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 sm:px-10">

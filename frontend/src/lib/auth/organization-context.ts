@@ -1,12 +1,6 @@
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-
-export type PermissionKey =
-  | "organization.view"
-  | "organization.update"
-  | "members.view"
-  | "members.manage"
-  | "roles.view"
-  | "roles.manage";
+import { isPermissionKey, type PermissionKey } from "./permissions";
 
 export type AccessibleOrganization = {
   id: string;
@@ -86,10 +80,19 @@ export async function getOrganizationContext(
   return {
     organization,
     membershipId: organization.membershipId,
-    permissions: data as PermissionKey[],
+    permissions: (data as unknown[]).filter(isPermissionKey),
   };
 }
 
-export function hasPermission(context: OrganizationContext, permission: PermissionKey): boolean {
-  return context.permissions.includes(permission);
+/**
+ * Page/action entry for a tenant workspace: signed in, active member of the organization.
+ * Entry is membership-based; specific actions inside then use requirePermission. Unknown and
+ * inaccessible slugs are both simply not found, so other tenants cannot be enumerated.
+ */
+export async function requireOrganizationAccess(slug: string) {
+  const user = await getUserContext();
+  if (!user) redirect("/login");
+  const context = await getOrganizationContext(user, slug);
+  if (!context) notFound();
+  return { user, context };
 }
