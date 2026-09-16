@@ -6,7 +6,7 @@ const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Resume Intelligence",
+  title: { default: "Resume Intelligence", template: "%s · Resume Intelligence" },
   description:
     "AI-assisted recruitment intelligence: resumes become evidence-backed candidate evaluations, with recruiters in control of every decision.",
 };

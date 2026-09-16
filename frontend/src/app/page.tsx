@@ -1,14 +1,22 @@
+import Link from "next/link";
+import { Brand } from "@/components/layout/brand";
 import { Pipeline } from "@/components/pipeline";
+import { StatusDot } from "@/components/ui/status-dot";
 
 export default function HomePage() {
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 sm:px-10">
       <header className="flex items-center justify-between py-8">
-        <p className="flex items-center gap-2.5 text-sm font-medium tracking-tight">
-          <span aria-hidden className="size-2 rounded-[2px] bg-accent" />
-          Resume Intelligence
-        </p>
-        <p className="font-mono text-xs text-muted-foreground">Phase 0</p>
+        <Brand />
+        <Link
+          href="/login"
+          className="group inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:text-accent"
+        >
+          Sign in
+          <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
+            →
+          </span>
+        </Link>
       </header>
 
       <main className="flex flex-1 flex-col justify-center py-16 sm:py-24">
@@ -39,10 +47,7 @@ export default function HomePage() {
 
       <footer className="flex items-center justify-between gap-4 border-t border-border py-6 text-sm">
         <p className="flex items-center gap-3">
-          <span aria-hidden className="relative flex size-2">
-            <span className="absolute inset-0 animate-pulse-ring rounded-full bg-accent motion-reduce:hidden" />
-            <span className="relative size-2 rounded-full bg-accent" />
-          </span>
+          <StatusDot />
           Platform foundation ready
         </p>
         <p className="font-mono text-xs text-muted-foreground">web · api</p>
