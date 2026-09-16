@@ -2,10 +2,9 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { EMAIL_PATTERN } from "@/lib/validation";
 
 export type LoginState = { error?: string; email?: string };
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function login(_previous: LoginState, formData: FormData): Promise<LoginState> {
   const rawEmail = formData.get("email");
