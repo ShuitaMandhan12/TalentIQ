@@ -5,10 +5,10 @@ An AI-assisted recruitment intelligence platform that converts resumes into evid
 ## Status
 
 ```text
-Phase 2A — SaaS foundation (schema)
+Phase 2C — Organization context
 ```
 
-Foundation, Supabase email/password authentication (sign in, protected `/app`, sign out, password recovery), and the multi-tenant database foundation in `supabase/migrations`: customer organizations with memberships, dynamic organization-defined roles over a system-defined permission catalog (users may hold several roles across several organizations), a separate platform-admin control plane, and per-organization service entitlements. Every table is protected by Row Level Security. Platform and tenant administration screens arrive in the following Phase 2 subphases. The backend still exposes only `GET /health`. No recruitment features are implemented yet.
+Foundation, Supabase email/password authentication (sign in, protected `/app`, sign out, password recovery), and the multi-tenant database foundation in `supabase/migrations`: customer organizations with memberships, dynamic organization-defined roles over a system-defined permission catalog (users may hold several roles across several organizations), a separate platform-admin control plane, and per-organization service entitlements. Every table is protected by Row Level Security. After sign-in, `/app` resolves the user's workspaces and each tenant workspace lives at `/app/<organization-slug>`, where the user's effective permissions (union of their roles) are loaded once per request. Platform and tenant administration screens arrive in the following Phase 2 subphases. The backend still exposes only `GET /health`. No recruitment features are implemented yet.
 
 ## Architecture
 

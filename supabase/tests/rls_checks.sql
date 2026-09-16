@@ -33,6 +33,7 @@ grant usage on schema public to anon, authenticated, service_role;
 grant usage on schema auth to authenticated, service_role;
 
 \ir ../migrations/20260916120000_saas_foundation.sql
+\ir ../migrations/20260916150000_organization_context.sql
 
 -- ---------------------------------------------------------------------------------------------
 -- test helpers
@@ -217,7 +218,7 @@ declare new_role uuid;
 begin
   perform test.login('alice');
   insert into public.roles (organization_id, name) values (test.org('acme'), 'Interview Panel') returning id into new_role;
-  insert into public.role_permissions (role_id, organization_id, permission_key) values (new_role, test.org('acme'), 'members.view');
+  insert into public.role_permissions (role_id, organization_id, permission_key) values (new_role, test.org('acme'), 'roles.view');
   insert into public.membership_roles (membership_id, role_id, organization_id)
   values (test.membership('acme', 'bob'), new_role, test.org('acme'));
   assert (select count(*) from public.membership_roles where membership_id = test.membership('acme', 'bob')) = 2, 'bob now has two roles';
@@ -269,6 +270,30 @@ begin
   exception when insufficient_privilege then null; when unique_violation then raise exception 'tenant insert reached the table'; end;
 end $$;
 
+-- effective permissions RPC: own active membership in an active organization, union of all roles
+do $$
+begin
+  perform test.login('bob'); -- Recruiter (members.view) + Interview Panel (roles.view)
+  assert (select array_agg(p order by p) from public.get_my_organization_permissions(test.org('acme')) p) = array['members.view', 'roles.view'], 'bob: union of two roles with different permissions';
+  assert (select count(*) from public.get_my_organization_permissions(test.org('beta'))) = 0, 'bob: nothing in an organization he does not belong to';
+  perform test.login('alice');
+  assert (select count(*) from public.get_my_organization_permissions(test.org('acme'))) = 6, 'alice: all six tenant permissions';
+  perform test.login('pat'); -- platform admin, not a member
+  assert (select count(*) from public.get_my_organization_permissions(test.org('acme'))) = 0, 'platform admin gets no tenant permissions from status alone';
+  execute 'set local role anon';
+  begin
+    perform public.get_my_organization_permissions(test.org('acme'));
+    raise exception 'anon could call the permissions RPC';
+  exception when insufficient_privilege then null; end;
+end $$;
+update public.organization_memberships set is_active = false where user_id = test.uid('bob');
+do $$
+begin
+  perform test.login('bob');
+  assert (select count(*) from public.get_my_organization_permissions(test.org('acme'))) = 0, 'inactive membership yields no permissions';
+end $$;
+update public.organization_memberships set is_active = true where user_id = test.uid('bob');
+
 -- platform admin: control plane without being a tenant member
 do $$
 begin
@@ -291,6 +316,7 @@ begin
   assert private.organization_has_service(test.org('acme'), 'resume_screening'), 'acme entitled';
   assert not private.organization_has_service(test.org('beta'), 'resume_screening'), 'suspended organization has no services';
   assert (select count(*) from public.organizations) = 1, 'member of a suspended organization can still read it';
+  assert (select count(*) from public.get_my_organization_permissions(test.org('beta'))) = 0, 'suspended organization yields no permissions';
   update public.organizations set name = 'Beta Talent Ltd' where id = test.org('beta');
   assert (select name from public.organizations where id = test.org('beta')) = 'Beta Talent', 'no tenant actions while suspended';
   begin
