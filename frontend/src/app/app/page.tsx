@@ -15,7 +15,14 @@ export default async function AppPage() {
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 sm:px-10">
       <header className="flex items-center justify-between py-8">
         <Brand />
-        <p className="font-mono text-xs text-muted-foreground">Phase 1</p>
+        <form action="/auth/signout" method="post">
+          <button
+            type="submit"
+            className="h-9 rounded border border-border bg-surface px-3.5 text-sm font-medium transition-colors hover:border-foreground/30 hover:bg-background"
+          >
+            Sign out
+          </button>
+        </form>
       </header>
 
       <main className="flex flex-1 flex-col justify-center py-16">
