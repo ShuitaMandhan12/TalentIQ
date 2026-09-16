@@ -13,7 +13,7 @@ const backToSignIn = (
   </Link>
 );
 
-export function ForgotPasswordForm() {
+export function ForgotPasswordForm({ invalidLink }: { invalidLink: boolean }) {
   const [state, formAction, isPending] = useActionState<ForgotPasswordState, FormData>(
     requestPasswordReset,
     {},
@@ -37,6 +37,11 @@ export function ForgotPasswordForm() {
       <p className="mt-2 text-sm text-pretty text-muted-foreground">
         Enter your work email and we&apos;ll send you a link to choose a new password.
       </p>
+      {invalidLink && (
+        <p role="alert" className="mt-6 border-l-2 border-destructive pl-3 text-sm">
+          That reset link is invalid or has expired. Request a new one.
+        </p>
+      )}
       <form action={formAction} className="mt-8 space-y-5">
         <div>
           <label htmlFor="email" className="mb-1.5 block text-sm font-medium">

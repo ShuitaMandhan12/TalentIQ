@@ -18,9 +18,9 @@ export async function requestPasswordReset(
     return { error: "Enter a valid email address." };
   }
 
-  // The Origin header is set by the browser and already validated against Host by Next.js
-  // for Server Actions, so it is a safe base for the fixed internal callback URL.
-  const origin = (await headers()).get("origin");
+  // Origin is browser-set and validated against Host by Next.js; APP_URL is trusted deployment
+  // configuration for clients that strip it. Nothing else may supply the callback base URL.
+  const origin = (await headers()).get("origin") ?? process.env.APP_URL?.replace(/\/$/, "");
   if (!origin) {
     return { error: GENERIC_FAILURE };
   }

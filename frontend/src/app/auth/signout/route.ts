@@ -8,7 +8,6 @@ export async function POST(request: Request) {
 
   if (data?.claims) {
     // Local scope ends only this browser's session; other devices stay signed in.
-    // A failure here still clears the local session, so the redirect is safe either way.
     await supabase.auth.signOut({ scope: "local" });
     revalidatePath("/", "layout");
   }

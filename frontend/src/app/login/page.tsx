@@ -6,10 +6,16 @@ import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-export default async function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reset?: string }>;
+}) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (data?.claims) redirect("/app");
+
+  const { reset } = await searchParams;
 
   return (
     <AuthShell>
@@ -18,6 +24,11 @@ export default async function LoginPage() {
         Sign in with your team credentials. Access is limited to authorized recruitment team
         members.
       </p>
+      {reset === "success" && (
+        <p role="status" className="mt-6 border-l-2 border-accent pl-3 text-sm">
+          Password updated. Sign in with your new password.
+        </p>
+      )}
       <div className="mt-8">
         <LoginForm />
       </div>

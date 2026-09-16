@@ -5,10 +5,10 @@ An AI-assisted recruitment intelligence platform that converts resumes into evid
 ## Status
 
 ```text
-Phase 0 — Foundation
+Phase 1 — Authentication
 ```
 
-The repository currently contains the project skeleton, design foundation, a single root page, and a backend health endpoint. No product features are implemented yet.
+Foundation plus Supabase email/password authentication: sign in, a protected `/app` destination, sign out, and password recovery (request email → callback → choose a new password). The backend still exposes only `GET /health`. No recruitment features are implemented yet.
 
 ## Architecture
 
@@ -68,4 +68,4 @@ pytest
 
 ## Environment variables
 
-None are required in Phase 0. See `.env.example`.
+The frontend reads `frontend/.env.local`; copy `frontend/.env.example` and fill in the Supabase URL and publishable key. `APP_URL` is the server-side base URL (`http://localhost:3000` locally) used for password-recovery links. The backend needs none yet.
