@@ -15,9 +15,19 @@ export default async function AppPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 sm:px-10">
-      <header className="flex items-center justify-between py-8">
+      <header className="flex items-center justify-between gap-4 py-8">
         <Brand />
-        <SignOutButton />
+        <div className="flex items-center gap-4">
+          {user.isPlatformAdmin && (
+            <Link
+              href="/platform"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Platform
+            </Link>
+          )}
+          <SignOutButton />
+        </div>
       </header>
 
       <main className="flex flex-1 flex-col justify-center py-16">
@@ -39,8 +49,7 @@ export default async function AppPage() {
             >
               Your account is not a member of any active organization yet. Ask an organization
               administrator to add you.
-              {user.isPlatformAdmin &&
-                " You are a platform administrator; platform administration will be available separately."}
+              {user.isPlatformAdmin && " As a platform administrator you can still open Platform."}
             </p>
           </>
         ) : (

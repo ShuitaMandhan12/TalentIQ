@@ -20,6 +20,14 @@ export default async function OrganizationWorkspacePage({
       <header className="flex items-center justify-between gap-4 py-8">
         <Brand />
         <div className="flex items-center gap-4">
+          {user.isPlatformAdmin && (
+            <Link
+              href="/platform"
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Platform
+            </Link>
+          )}
           {user.organizations.length > 1 && (
             <Link
               href="/app"

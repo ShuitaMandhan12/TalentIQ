@@ -34,6 +34,7 @@ grant usage on schema auth to authenticated, service_role;
 
 \ir ../migrations/20260916120000_saas_foundation.sql
 \ir ../migrations/20260916150000_organization_context.sql
+\ir ../migrations/20260916180000_platform_control_plane.sql
 
 -- ---------------------------------------------------------------------------------------------
 -- test helpers
@@ -75,15 +76,15 @@ insert into public.platform_admins (user_id) values (test.uid('pat'));
 
 insert into public.organizations (name, slug) values ('Acme Recruiting', 'acme'), ('Beta Talent', 'beta');
 
+-- "Organization Admin" is provisioned by trigger on organization insert; add the other roles.
 insert into public.roles (organization_id, name, is_system) values
-  (test.org('acme'), 'Organization Admin', true),
   (test.org('acme'), 'Recruiter', false),
   (test.org('beta'), 'HR Admin', true),
   (test.org('beta'), 'Recruiter', false);
 
 insert into public.role_permissions (role_id, organization_id, permission_key)
 select r.id, r.organization_id, p.key from public.roles r cross join public.permissions p
-where r.name in ('Organization Admin', 'HR Admin');
+where r.name = 'HR Admin';
 insert into public.role_permissions (role_id, organization_id, permission_key) values
   (test.role_id('acme', 'Recruiter'), test.org('acme'), 'members.view'),
   (test.role_id('beta', 'Recruiter'), test.org('beta'), 'roles.view');
@@ -304,9 +305,28 @@ begin
   update public.organization_service_entitlements set enabled = true, limits = '{"seats": 25}' where organization_id = test.org('beta');
   assert (select enabled from public.organization_service_entitlements where organization_id = test.org('beta')) = true, 'platform admin enables a service';
   insert into public.organizations (name, slug) values ('Gamma Hiring', 'gamma');
+  assert (select count(*) from public.roles where organization_id = test.org('gamma')) = 1, 'new organization gets exactly one default role';
+  assert (select count(*) from public.roles where organization_id = test.org('gamma') and name = 'Organization Admin' and is_system) = 1, 'default role is the Organization Admin system role';
+  assert (select count(*) from public.role_permissions where organization_id = test.org('gamma')) = 6, 'default role carries the six management permissions';
+  assert (select count(*) from public.organization_memberships where organization_id = test.org('gamma')) = 0, 'creating an organization does not make the platform admin a member';
   insert into public.platform_services (key, name) values ('job_posting', 'Job posting');
   update public.organizations set is_active = false where id = test.org('beta');
   assert (select is_active from public.organizations where id = test.org('beta')) = false, 'platform admin suspends an organization';
+end $$;
+
+-- provisioning invariant: an incomplete permission catalog makes the organization insert fail as a
+-- whole (run as the owner, since only migrations may touch the catalog)
+do $$
+begin
+  begin
+    delete from public.permissions where key = 'roles.manage';
+    insert into public.organizations (name, slug) values ('Broken Provisioning', 'broken');
+    raise exception 'organization was created without its full default role';
+  exception when raise_exception then
+    assert sqlerrm like '%incomplete%', format('unexpected error: %s', sqlerrm);
+  end;
+  assert not exists (select 1 from public.organizations where slug = 'broken'), 'failed provisioning rolled back the organization';
+  assert exists (select 1 from public.permissions where key = 'roles.manage'), 'catalog restored by sub-transaction rollback';
 end $$;
 
 -- entitlement helper and suspension semantics
