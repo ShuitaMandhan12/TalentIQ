@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { ActionState } from "@/components/ui/action-form";
 import { requirePlatformActionAccess } from "@/lib/platform/auth";
 import { createClient } from "@/lib/supabase/server";
 
@@ -60,14 +61,12 @@ export async function createOrganization(
   redirect(`/platform/organizations/${data.id}`);
 }
 
-export type PlatformActionState = { error?: string };
-
 const GENERIC_FAILURE = "Unable to save the change. Please try again.";
 
 export async function setOrganizationStatus(
-  _previous: PlatformActionState,
+  _previous: ActionState,
   formData: FormData,
-): Promise<PlatformActionState> {
+): Promise<ActionState> {
   await requirePlatformActionAccess();
 
   const organizationId = text(formData, "organizationId");
@@ -91,9 +90,9 @@ export async function setOrganizationStatus(
 }
 
 export async function setServiceEntitlement(
-  _previous: PlatformActionState,
+  _previous: ActionState,
   formData: FormData,
-): Promise<PlatformActionState> {
+): Promise<ActionState> {
   await requirePlatformActionAccess();
 
   const organizationId = text(formData, "organizationId");

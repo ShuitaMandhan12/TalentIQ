@@ -9,13 +9,13 @@ export const metadata: Metadata = { title: "Sign in" };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reset?: string }>;
+  searchParams: Promise<{ reset?: string; error?: string }>;
 }) {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
   if (data?.claims) redirect("/app");
 
-  const { reset } = await searchParams;
+  const { reset, error } = await searchParams;
 
   return (
     <AuthShell>
@@ -24,6 +24,11 @@ export default async function LoginPage({
         Sign in with your team credentials. Access is limited to authorized recruitment team
         members.
       </p>
+      {error === "invalid-link" && (
+        <p role="alert" className="mt-6 border-l-2 border-destructive pl-3 text-sm">
+          That link is invalid or has expired. Ask your administrator to send a new invitation.
+        </p>
+      )}
       {reset === "success" && (
         <p role="status" className="mt-6 border-l-2 border-accent pl-3 text-sm">
           Password updated. Sign in with your new password.

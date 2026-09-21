@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { PermissionDeniedError } from "@/lib/auth/authorization";
 import { createClient } from "@/lib/supabase/server";
 import { isPermissionKey, type PermissionKey } from "./permissions";
 
@@ -94,5 +95,13 @@ export async function requireOrganizationAccess(slug: string) {
   if (!user) redirect("/login");
   const context = await getOrganizationContext(user, slug);
   if (!context) notFound();
+  return { user, context };
+}
+
+/** Server Action counterpart: same resolution, but any failure is a generic denial, never navigation. */
+export async function requireOrganizationActionAccess(slug: string) {
+  const user = await getUserContext();
+  const context = user && (await getOrganizationContext(user, slug));
+  if (!user || !context) throw new PermissionDeniedError();
   return { user, context };
 }

@@ -8,9 +8,9 @@ import {
   getPlatformServices,
 } from "@/lib/platform/data";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { formatDate } from "../../format";
+import { formatDate } from "@/lib/format";
 import { setOrganizationStatus, setServiceEntitlement } from "../actions";
-import { ActionForm } from "./action-form";
+import { ActionForm } from "@/components/ui/action-form";
 
 export const metadata: Metadata = { title: "Organization" };
 

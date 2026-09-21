@@ -3,7 +3,7 @@ import Link from "next/link";
 import { requirePlatformPageAccess } from "@/lib/platform/auth";
 import { getPlatformOrganizations, getPlatformStats } from "@/lib/platform/data";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { formatDate } from "./format";
+import { formatDate } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Platform" };
 

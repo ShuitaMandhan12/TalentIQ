@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { hasPermission } from "@/lib/auth/authorization";
 import { requireOrganizationAccess } from "@/lib/auth/organization-context";
-import { Brand } from "@/components/layout/brand";
-import { SignOutButton } from "@/components/layout/sign-out-button";
+import { PERMISSIONS } from "@/lib/auth/permissions";
+import { WorkspaceHeader } from "@/components/layout/workspace-header";
 import { StatusDot } from "@/components/ui/status-dot";
 
 export const metadata: Metadata = { title: "Workspace" };
@@ -15,30 +16,23 @@ export default async function OrganizationWorkspacePage({
   const { organizationSlug } = await params;
   const { user, context } = await requireOrganizationAccess(organizationSlug);
 
+  // Link visibility is convenience only; each page enforces its own permission.
+  const accessLinks = [
+    hasPermission(context, PERMISSIONS.MEMBERS_VIEW) && {
+      href: `/app/${organizationSlug}/members`,
+      title: "Members",
+      detail: "Manage who can access this workspace and which roles they hold.",
+    },
+    hasPermission(context, PERMISSIONS.ROLES_VIEW) && {
+      href: `/app/${organizationSlug}/roles`,
+      title: "Roles",
+      detail: "Create permission bundles for your organization.",
+    },
+  ].filter((link) => link !== false);
+
   return (
     <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-6 sm:px-10">
-      <header className="flex items-center justify-between gap-4 py-8">
-        <Brand />
-        <div className="flex items-center gap-4">
-          {user.isPlatformAdmin && (
-            <Link
-              href="/platform"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Platform
-            </Link>
-          )}
-          {user.organizations.length > 1 && (
-            <Link
-              href="/app"
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Switch workspace
-            </Link>
-          )}
-          <SignOutButton />
-        </div>
-      </header>
+      <WorkspaceHeader user={user} />
 
       <main className="flex flex-1 flex-col justify-center py-16">
         <p className="flex animate-rise items-center gap-3 text-sm font-medium text-accent motion-reduce:animate-none">
@@ -72,8 +66,37 @@ export default async function OrganizationWorkspacePage({
           </div>
         </dl>
 
+        {accessLinks.length > 0 && (
+          <section
+            style={{ animationDelay: "240ms" }}
+            className="mt-10 animate-rise motion-reduce:animate-none"
+          >
+            <h2 className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
+              Organization access
+            </h2>
+            <ul className="mt-3 max-w-2xl divide-y divide-border border-y border-border">
+              {accessLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="group flex items-center justify-between gap-6 py-4 transition-colors hover:text-accent"
+                  >
+                    <span>
+                      <span className="block font-medium">{link.title}</span>
+                      <span className="mt-0.5 block text-sm text-muted-foreground">{link.detail}</span>
+                    </span>
+                    <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
+                      →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <section
-          style={{ animationDelay: "240ms" }}
+          style={{ animationDelay: "320ms" }}
           className="mt-10 animate-rise motion-reduce:animate-none"
         >
           <h2 className="font-mono text-xs tracking-wide text-muted-foreground uppercase">

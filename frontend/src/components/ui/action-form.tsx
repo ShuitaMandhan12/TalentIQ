@@ -1,16 +1,17 @@
 "use client";
 
 import { useActionState } from "react";
-import type { PlatformActionState } from "../actions";
+
+export type ActionState = { error?: string };
 
 type Props = {
-  action: (previous: PlatformActionState, formData: FormData) => Promise<PlatformActionState>;
+  action: (previous: ActionState, formData: FormData) => Promise<ActionState>;
   fields: Record<string, string>;
   label: string;
   ariaLabel?: string;
 };
 
-/** A one-button platform mutation with hidden inputs, pending state and an inline sanitized error. */
+/** A one-button mutation with hidden inputs, pending state and an inline sanitized error. */
 export function ActionForm({ action, fields, label, ariaLabel }: Props) {
   const [state, formAction, isPending] = useActionState(action, {});
 
